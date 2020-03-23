@@ -1,35 +1,96 @@
-import cv2
+import imutils
 import numpy as np
-import matplotlib.pyplot as plt
+import cv2
 
 cap = cv2.VideoCapture(0)
-
+cap.set(3,640)
+cap.set(4,480)
 
 while True:
-    _, frame = cap.read()
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    # Red color
-    low_red = np.array([161, 155, 84])
-    high_red = np.array([179, 255, 255])
-    red_mask = cv2.inRange(hsv_frame, low_red, high_red)
-    red = cv2.bitwise_and(frame, frame, mask=red_mask)
-    # Blue color
-    low_blue = np.array([94, 80, 2])
-    high_blue = np.array([126, 255, 255])
-    blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
-    blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
+    _,frame=cap.read()
+    hsv=cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
 
-    # Green color
-    low_green = np.array([25, 52, 72])
-    high_green = np.array([102, 255, 255])
-    green_mask = cv2.inRange(hsv_frame, low_green, high_green)
-    green = cv2.bitwise_and(frame, frame, mask=green_mask)
+    lower_yellow = np.array([20,100,100])
+    upper_yellow = np.array([35,255,255])
 
-    cv2.imshow("Frame", frame)
-    cv2.imshow("Red", red)
-    cv2.imshow("Blue", blue)
-    cv2.imshow("Green", green)
+    lower_green = np.array([35,100,100])
+    upper_green = np.array([79,255,255])
 
-    key = cv2.waitKey(1)
-    if key == 27:
+    lower_red = np.array([0,100,100])
+    upper_red = np.array([7,255,255])
+
+    lower_blue = np.array([80,100,100])
+    upper_blue = np.array([150,255,255])
+
+    mask1 = cv2.inRange(hsv,lower_yellow,upper_yellow)
+    mask2 = cv2.inRange(hsv,lower_green,upper_green)
+    mask3 = cv2.inRange(hsv,lower_red,upper_red)
+    mask4 = cv2.inRange(hsv,lower_blue,upper_blue)
+
+    cnts1 = cv2.findContours(mask1, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    cnts1 = imutils.grab_contours(cnts1)
+
+    cnts2 = cv2.findContours(mask2, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    cnts2 = imutils.grab_contours(cnts2)
+
+    cnts3 = cv2.findContours(mask3, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    cnts3 = imutils.grab_contours(cnts3)
+
+    cnts4 = cv2.findContours(mask4, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    cnts4 = imutils.grab_contours(cnts4)
+
+    for c in cnts1:
+        area1 = cv2.contourArea(c)
+        if area1>5000:
+            cv2.drawContours(frame,[c],-1,(0,255,0),3)
+            M = cv2.moments(c)
+
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+
+            cv2.circle(frame,(cx,cy),7,(255,255,255),-1)
+            cv2.putText(frame,"Yellow",(cx-20,cy-20),cv2.FONT_HERSHEY_SIMPLEX,2.5,(255,255,255),3)
+
+
+    for c in cnts3:
+        area3 = cv2.contourArea(c)
+        if area3>5000:
+            cv2.drawContours(frame,[c],-1,(0,255,0),3)
+            M = cv2.moments(c)
+
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+
+            cv2.circle(frame,(cx,cy),7,(255,255,255),-1)
+            cv2.putText(frame,"Red",(cx-20,cy-20),cv2.FONT_HERSHEY_SIMPLEX,2.5,(255,255,255),3)
+
+    for c in cnts2:
+        area2 = cv2.contourArea(c)
+        if area2>5000:
+            cv2.drawContours(frame,[c],-1,(0,255,0),3)
+            M = cv2.moments(c)
+
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+
+            cv2.circle(frame,(cx,cy),7,(255,255,255),-1)
+            cv2.putText(frame,"Green",(cx-20,cy-20),cv2.FONT_HERSHEY_SIMPLEX,2.5,(255,255,255),3)
+
+    for c in cnts4:
+        area4 = cv2.contourArea(c)
+        if area1>5000:
+            cv2.drawContours(frame,[c],-1,(0,255,0),3)
+            M = cv2.moments(c)
+
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+
+            cv2.circle(frame,(cx,cy),7,(255,255,255),-1)
+            cv2.putText(frame,"Blue",(cx-20,cy-20),cv2.FONT_HERSHEY_SIMPLEX,2.5,(255,255,255),3)
+
+    cv2.imshow("result",frame)
+    k=cv2.waitKey(5)
+    if k==27:
         break
+cap.release()
+cv2.destroyAllWindows()
